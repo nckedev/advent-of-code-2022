@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace aoc2023;
 
 
@@ -5,7 +7,7 @@ public class Day1 : DayBase
 {
     public override long Solve()
     {
-        var r = File.ReadLines(GetFile(1));
+        Debug.Assert(1 > 2, "1 är inte större än 2");
         return 1 + 1;
     }
 
