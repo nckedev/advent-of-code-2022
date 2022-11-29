@@ -3,7 +3,7 @@ using System.Diagnostics;
 namespace aoc2023;
 
 
-public class Day1 : DayBase
+public class Day1 : DayBase<long>
 {
     public override long Solve()
     {
@@ -13,6 +13,6 @@ public class Day1 : DayBase
 
     public override long Solve2()
     {
-        return 2 + 2;
+        throw new NotImplementedException();
     }
 }

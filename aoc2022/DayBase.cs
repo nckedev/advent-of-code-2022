@@ -1,15 +1,16 @@
 using System.Diagnostics;
+using System.Numerics;
 
 namespace aoc2023;
 
-public abstract class DayBase
+public abstract class DayBase<T> where T : INumber<T>
 {
-    public abstract long Solve();
-    public abstract long Solve2();
+    public abstract T Solve();
+    public abstract T Solve2();
 
-    public virtual long? ReadFile(string file)
+    public virtual T ReadFile(string file)
     {
-        return null;
+        return T.Zero;
     }
 
     public virtual string GetFile(int day) =>
@@ -20,9 +21,9 @@ public abstract class DayBase
 }
 
 
-public static class Solver
+public static class Solver 
 {
-    public static void Solve(DayBase day)
+    public static void Solve<T>(DayBase<T> day) where T : INumber<T>
     {
         Stopwatch s = new Stopwatch();
         s.Start();
