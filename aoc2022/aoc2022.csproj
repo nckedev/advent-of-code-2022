@@ -8,4 +8,10 @@
         <RootNamespace>aoc2023</RootNamespace>
     </PropertyGroup>
 
+    <ItemGroup>
+      <None Update="input\Day1.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

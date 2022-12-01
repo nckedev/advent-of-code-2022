@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Numerics;
+using System.Windows;
 
 namespace aoc2023;
 
@@ -8,16 +9,16 @@ public abstract class DayBase<T> where T : INumber<T>
     public abstract T Solve();
     public abstract T Solve2();
 
-    public virtual T ReadFile(string file)
+    public virtual IEnumerable<T> ReadFile(int day)
     {
-        return T.Zero;
+        return File.ReadLines(GetFile(day)).Select(s => T.Parse(s, null));
     }
 
     public virtual string GetFile(int day) =>
-        "Day" + day + ".txt";
+        "input/Day" + day + ".txt";
     
     public virtual string GetTestFile(int day) =>
-        "Day_test" + day + ".txt";
+        "input/Day_test" + day + ".txt";
 }
 
 
