@@ -3,6 +3,7 @@ using System.Numerics;
 
 namespace aoc2023;
 
+
 public abstract class DayBase<T> where T : INumber<T>
 {
     public abstract T Solve();
@@ -13,7 +14,7 @@ public abstract class DayBase<T> where T : INumber<T>
         return File.ReadLines(GetFile(day)).Select(s => T.Parse(s, null));
     }
 
-    public virtual IEnumerable<string> ReadFileAsLines(int day, bool testfile= false)
+    public virtual IEnumerable<string> ReadFileAsLines(int day, bool testfile = false)
     {
         if (testfile) return File.ReadLines(GetTestFile(day));
         return File.ReadLines(GetFile(day));
@@ -47,16 +48,15 @@ public static class Solver
         Console.Write("1: " + res);
         Console.WriteLine("    in " + s.Elapsed.Milliseconds + "ms");
         _totalTime += s.Elapsed.Milliseconds;
-        
-        
+
+
         s.Restart();
         var res2 = day.Solve2();
         s.Stop();
         Console.Write("2: " + res2);
         Console.WriteLine("    in " + s.Elapsed.Milliseconds + "ms");
         Console.WriteLine();
-        _totalTime += s.Elapsed.Milliseconds; 
-
+        _totalTime += s.Elapsed.Milliseconds;
     }
 
     public static void PrintTotalTime() => Console.WriteLine("Total time: " + _totalTime + "ms");
