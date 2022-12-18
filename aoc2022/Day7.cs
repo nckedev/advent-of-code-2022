@@ -23,7 +23,7 @@ public class FileNode : Node
 {
     public int Size { get; }
 
-    public FileNode(string name, int size, DirNode? parent) : base (name, parent)
+    public FileNode(string name, int size, DirNode? parent) : base(name, parent)
     {
         Size = size;
     }
@@ -48,13 +48,13 @@ public class Day7 : DayBase<int>
     {
         Root = Parse();
     }
-    
+
     private DirNode Parse()
     {
         DirNode? current = new DirNode("/", null);
         foreach (var row in ReadFileAsLines(7, true))
         {
-            if( row == "$ cd /")
+            if (row == "$ cd /")
                 continue;
 
             if (row == "$ cd ..")
@@ -70,7 +70,7 @@ public class Day7 : DayBase<int>
                 var path = row[5..];
                 current = current?.Nodes?.FirstOrDefault(x => x.Name == path) as DirNode;
             }
-            
+
             if (row.StartsWith("dir "))
             {
                 var path = row[4..];
@@ -93,31 +93,45 @@ public class Day7 : DayBase<int>
         {
             current = current.Parent;
         }
+
         return current;
     }
 
     private int Sum(DirNode? node)
     {
         int sum = 0;
-        
 
         foreach (var n in node.Nodes)
         {
             if (n is DirNode dir)
             {
-                return sum + Sum(dir);
+                var temp = Sum(dir);
+                if (temp <= 100000)
+                    sum += Sum(dir);
+                else
+                    sum += 0;
+
             }
             else if (n is FileNode f)
             {
                 sum += f.Size;
             }
         }
-        return Sum(node.Parent);
+
+        //todo retur blir fel men sum skrivs ut rätt. 
+        // if (sum <= 100000)
+        // {
+        //     Console.WriteLine(sum);
+        //     return sum;
+        // }
+        return sum;
     }
+
     public override int Solve()
     {
-        
-        return Sum(Root); // 48381165
+        return Sum(Root); 
+        //48381165
+        //95437
     }
 
     public override int Solve2()
