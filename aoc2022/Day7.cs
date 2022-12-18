@@ -97,24 +97,26 @@ public class Day7 : DayBase<int>
         return current;
     }
 
-    private int Sum(DirNode? node)
+    private int Sum(DirNode? node, int prev = 0)
     {
         int sum = 0;
+        int dirsum = 0;
+        int filesum = 0;
+        bool isOverMax = false;
 
         foreach (var n in node.Nodes)
         {
             if (n is DirNode dir)
             {
-                var temp = Sum(dir);
+                var temp = Sum(dir, prev);
                 if (temp <= 100000)
-                    sum += Sum(dir);
-                else
-                    sum += 0;
-
+                {
+                    prev += temp;
+                }
             }
             else if (n is FileNode f)
             {
-                sum += f.Size;
+                filesum += f.Size;
             }
         }
 
@@ -124,14 +126,15 @@ public class Day7 : DayBase<int>
         //     Console.WriteLine(sum);
         //     return sum;
         // }
-        return sum;
+        return prev;
     }
 
     public override int Solve()
     {
-        return Sum(Root); 
+        return Sum(Root);
         //48381165
-        //95437
+        //< m 95437
+        //a = 94853
     }
 
     public override int Solve2()
