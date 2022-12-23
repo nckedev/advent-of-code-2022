@@ -4,48 +4,75 @@ using System.Numerics;
 
 namespace aoc2023;
 
+public struct Seen
+{
+    public int Value;
+    public int Row;
+    public int Col;
+
+    public Seen(int value, int row, int col)
+    {
+        Value = value;
+        Row = row;
+        Col = col;
+    }
+
+    public override int GetHashCode()
+    {
+        return Value + Row * 10 + Col * 100;
+    }
+}
+
 public class Day8 : DayBase<int>
 {
-    private HashSet<int> Seen = new HashSet<int>();
+    private HashSet<Seen> Seen = new HashSet<Seen>();
     private int _currentMax = 0;
+
+    private int CheckValue(int value, int row, int col)
+    {
+        if ((value > _currentMax))
+        {
+            var seen = new Seen(value, row, col);
+            if (!Seen.Contains(seen))
+            {
+                Seen.Add(seen);
+                _currentMax = value;
+            }
+        }
+
+        return value;
+    }
 
     public override int Solve()
     {
-        var f = ReadFileAsLines(8);
+        var f = ReadFileAsLines(8, true);
         var sum = 0;
         var grid = new Grid<int>(f.Count());
-        foreach (var row in f){
+        foreach (var row in f)
+        {
             grid.Add(row);
         }
-        
+
         foreach (var a in Enumerable.Range(0, grid.Rows))
         {
             foreach (var b in grid.IterateHorizontal(a))
             {
-                if (b.value > _currentMax)
-                {
-                    Seen.Add(b.value);
-                }
+                CheckValue(b.value, a, b.index);
 
                 if (b.value == 9) break;
             }
 
             sum += Seen.Count;
-            Seen.Clear();
             _currentMax = 0;
 
             foreach (var b in grid.IterateHorizontal(a, true))
             {
-                if (b.value > _currentMax)
-                {
-                    Seen.Add(b.value);
-                }
+                CheckValue(b.value, a, b.index);
 
                 if (b.value == 9) break;
             }
 
             sum += Seen.Count;
-            Seen.Clear();
             _currentMax = 0;
         }
 
@@ -53,33 +80,25 @@ public class Day8 : DayBase<int>
         {
             foreach (var b in grid.IterateVertical(a))
             {
-                if (b.value > _currentMax)
-                {
-                    Seen.Add(b.value);
-                }
+                CheckValue(b.value, b.index, a);
 
                 if (b.value == 9) break;
             }
 
             sum += Seen.Count;
-            Seen.Clear();
             _currentMax = 0;
             foreach (var b in grid.IterateVertical(a, true))
             {
-                if (b.value > _currentMax)
-                {
-                    Seen.Add(b.value);
-                }
+                CheckValue(b.value, b.index, a);
 
                 if (b.value == 9) break;
             }
 
             sum += Seen.Count;
-            Seen.Clear();
             _currentMax = 0;
         }
 
-        return sum;
+        return Seen.Count;
         //1578 för lågt
         //1745 för högt
     }
@@ -87,6 +106,17 @@ public class Day8 : DayBase<int>
     public override int Solve2()
     {
         return 0;
+    }
+
+    private void PrittyPrint(HashSet<Seen> seen, int size = 5)
+    {
+        var list = new int[size][];
+        for (int i = 0 ; i > size ; i ++)
+        {
+            list[i] = Enumerable.Repeat(-1, size).ToArray();
+        }
+        
+        
     }
 }
 
@@ -109,14 +139,13 @@ public class Grid<T> where T : INumber<T>
         grid[_currentRow] = row.Select(s => T.Parse(s.ToString(), null)).ToArray();
         Cols = grid[_currentRow].Length;
         _currentRow++;
-        ;
     }
 
     public IEnumerable<(T value, int index)> IterateHorizontal(int row, bool startFromEnd = false)
     {
         if (!startFromEnd)
         {
-            for (var i = 1; i < grid[row].Length -1; i++)
+            for (var i = 0; i < grid[row].Length ; i++)
             {
                 yield return (grid[row][i], i);
             }
@@ -124,7 +153,7 @@ public class Grid<T> where T : INumber<T>
 
         else
         {
-            for (var i = grid[row].Length - 2; i >= 1; i--)
+            for (var i = grid[row].Length - 1; i >= 0; i--)
             {
                 yield return (grid[row][i], i);
             }
@@ -135,14 +164,14 @@ public class Grid<T> where T : INumber<T>
     {
         if (!startFromEnd)
         {
-            for (var i = 1; i < Rows -1; i++)
+            for (var i = 0; i < Rows; i++)
             {
                 yield return (grid[i][col], i);
             }
         }
         else
         {
-            for (var i = Rows - 2; i >= 1; i--)
+            for (var i = Rows - 1; i >= 0; i--)
             {
                 yield return (grid[i][col], i);
             }
