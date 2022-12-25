@@ -1,6 +1,6 @@
 ﻿using System.Data;
 using System.Diagnostics.Contracts;
-using System.Numerics;
+using System.Linq.Expressions;
 
 namespace aoc2023;
 
@@ -19,162 +19,142 @@ public struct Seen
 
     public override int GetHashCode()
     {
-        return Value + Row * 10 + Col * 100;
+        return base.GetHashCode();
+        // return Value + Row * 10 + Col * 100;
     }
 }
 
-public class Day8 : DayBase<int>
+public sealed class Day8 : DayBase<int>
 {
     private HashSet<Seen> Seen = new HashSet<Seen>();
-    private int _currentMax = 0;
+    private int _currentMax = -1;
 
-    private int CheckValue(int value, int row, int col)
+    private readonly Grid<int> _grid;
+
+    public Day8()
     {
-        if ((value > _currentMax))
+        _grid = new Grid<int>(ReadFileAsGrid(8, false));
+    }
+
+    private void CheckValue(int value, int row, int col)
+    {
+        if (value > _currentMax)
         {
+            _currentMax = value;
             var seen = new Seen(value, row, col);
             if (!Seen.Contains(seen))
             {
                 Seen.Add(seen);
-                _currentMax = value;
             }
         }
+    }
 
-        return value;
+    private void CheckValues(int index, bool isCol, bool fromBack,
+        Func<int, bool, IEnumerable<(int Value, int Index)>> f)
+    {
+        foreach (var t in f.Invoke(index, fromBack))
+        {
+            CheckValue(t.Value, isCol ? t.Index : index, isCol ? index : t.Index);
+            if (t.Value == 9) break;
+        }
+
+        _currentMax = -1;
     }
 
     public override int Solve()
     {
-        var f = ReadFileAsLines(8, true);
-        var sum = 0;
-        var grid = new Grid<int>(f.Count());
-        foreach (var row in f)
+        foreach (var a in Enumerable.Range(0, _grid.RowLen))
         {
-            grid.Add(row);
+            CheckValues(a, false, false, (i, b) => _grid.IterateHorizontal(i, b));
+            CheckValues(a, false, true, (i, b) => _grid.IterateHorizontal(i, b));
         }
 
-        foreach (var a in Enumerable.Range(0, grid.Rows))
+        foreach (var a in Enumerable.Range(0, _grid.ColLen))
         {
-            foreach (var b in grid.IterateHorizontal(a))
-            {
-                CheckValue(b.value, a, b.index);
-
-                if (b.value == 9) break;
-            }
-
-            sum += Seen.Count;
-            _currentMax = 0;
-
-            foreach (var b in grid.IterateHorizontal(a, true))
-            {
-                CheckValue(b.value, a, b.index);
-
-                if (b.value == 9) break;
-            }
-
-            sum += Seen.Count;
-            _currentMax = 0;
+            CheckValues(a, true, false, (i, b) => _grid.IterateVertical(i, b));
+            CheckValues(a, true, true, (i, b) => _grid.IterateVertical(i, b));
         }
 
-        foreach (var a in Enumerable.Range(0, grid.Cols))
-        {
-            foreach (var b in grid.IterateVertical(a))
-            {
-                CheckValue(b.value, b.index, a);
-
-                if (b.value == 9) break;
-            }
-
-            sum += Seen.Count;
-            _currentMax = 0;
-            foreach (var b in grid.IterateVertical(a, true))
-            {
-                CheckValue(b.value, b.index, a);
-
-                if (b.value == 9) break;
-            }
-
-            sum += Seen.Count;
-            _currentMax = 0;
-        }
-
+        // PrettyPrint(Seen);
         return Seen.Count;
-        //1578 för lågt
-        //1745 för högt
     }
 
     public override int Solve2()
     {
-        return 0;
+        var maxScore = 0;
+        for (var i = 0; i < _grid.RowLen; i++)
+        {
+            for (var j = 0; j < _grid.ColLen; j++)
+            {
+                var score = 1;
+                var currentHeight = _grid.Get(i, j);
+                for (var k = 0; k < 4; k++)
+                {
+                    var isFirst = true;
+
+                    var steps = 0;
+                    foreach (var l in _grid.IterateFromIndexToEnd(i, j, (GridDirection) (1 << k)))
+                    {
+                        if (isFirst)
+                        {
+                            isFirst = false;
+                            continue;
+                        }
+                        steps++;
+
+                        var isBackwards = ((GridDirection) k & GridDirection.Backwards) > 0;
+                        var maxIndex = _grid.RowLen - 1;
+
+                        if (l.value >= currentHeight
+                            || (isBackwards && l.index == 0)
+                            || (!isBackwards && l.index == maxIndex))
+                        {
+                            break;
+                        }
+                    }
+                    score *= steps;
+
+                    if(score == 0) break;
+                }
+
+                if (score > maxScore)
+                {
+                    maxScore = score;
+                }
+            }
+        }
+
+        return maxScore;
     }
 
-    private void PrittyPrint(HashSet<Seen> seen, int size = 5)
+    private void PrettyPrint(HashSet<Seen> seen, int size = 5)
     {
         var list = new int[size][];
-        for (int i = 0 ; i > size ; i ++)
+        for (int i = 0; i < size; i++)
         {
             list[i] = Enumerable.Repeat(-1, size).ToArray();
         }
-        
-        
-    }
-}
 
-public class Grid<T> where T : INumber<T>
-{
-    private T[][] grid;
-    public int Rows { get; }
-    public int Cols { get; private set; }
-
-    private int _currentRow = 0;
-
-    public Grid(int rows)
-    {
-        Rows = rows;
-        grid = new T[rows][];
-    }
-
-    public void Add(string row)
-    {
-        grid[_currentRow] = row.Select(s => T.Parse(s.ToString(), null)).ToArray();
-        Cols = grid[_currentRow].Length;
-        _currentRow++;
-    }
-
-    public IEnumerable<(T value, int index)> IterateHorizontal(int row, bool startFromEnd = false)
-    {
-        if (!startFromEnd)
+        foreach (var s in Seen)
         {
-            for (var i = 0; i < grid[row].Length ; i++)
-            {
-                yield return (grid[row][i], i);
-            }
+            list[s.Row][s.Col] = s.Value;
         }
 
-        else
+        foreach (var row in list)
         {
-            for (var i = grid[row].Length - 1; i >= 0; i--)
+            foreach (var col in row)
             {
-                yield return (grid[row][i], i);
+                if (col == -1)
+                {
+                    Console.Write("x ");
+                }
+                else
+                {
+                    Console.Write(col + " ");
+                }
             }
-        }
-    }
 
-    public IEnumerable<(T value, int index)> IterateVertical(int col, bool startFromEnd = false)
-    {
-        if (!startFromEnd)
-        {
-            for (var i = 0; i < Rows; i++)
-            {
-                yield return (grid[i][col], i);
-            }
-        }
-        else
-        {
-            for (var i = Rows - 1; i >= 0; i--)
-            {
-                yield return (grid[i][col], i);
-            }
+            Console.WriteLine();
         }
     }
 }
