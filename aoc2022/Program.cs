@@ -4,6 +4,6 @@ using aoc2023;
 
 // Solver.Solve(new Day1());
 // Solver.Solve(new Day2());
-Solver.Solve(new Day8());
+Solver.Solve(new Day9());
 
 Solver.PrintTotalTime();
