@@ -7,6 +7,8 @@ public struct Knot
 {
     public int X { get; private set; }
     public int Y { get; private set; }
+    public int LastX { get; private set; }
+    public int LastY { get; private set; }
 
     public Knot(int x, int y)
     {
@@ -16,6 +18,8 @@ public struct Knot
 
     public void Step(Direction dir)
     {
+        LastX = X;
+        LastY = Y;
         if (dir == Direction.Up) Y++;
         if (dir == Direction.Down) Y--;
         if (dir == Direction.Left) X--;
@@ -32,6 +36,13 @@ public struct Knot
 
     public void Follow(Knot k)
     {
+        X = k.LastX;
+        Y = k.LastY;
+    }
+
+    private int ManhattanDistanceTo(Knot k)
+    {
+        return Math.Abs(k.X - X) + Math.Abs(k.Y - Y);
     }
 }
 
@@ -57,6 +68,31 @@ public class Day9 : DayBase<int>
         _ => Direction.Undefined
     };
 
+    private void PrintTrail(HashSet<Knot> set)
+    {
+        var maxY = set.Max(m => m.Y) + 1;
+        var maxX = set.Max(m => m.X) + 1;
+
+        var grid = new List<char[]>();
+        for (var i = 0; i < maxY; i++)
+        {
+            grid.Add(Enumerable.Repeat('.', maxX).ToArray());
+        }
+        foreach (var s in set)
+        {
+            grid[maxY -1 - s.Y][s.X] = '#';
+        }
+
+        foreach (var row in grid)
+        {
+            foreach (var col in row)
+            {
+                Console.Write(col);
+            }
+            Console.WriteLine();
+        }
+    }
+
     public override int Solve()
     {
         var head = new Knot(0, 0);
@@ -76,11 +112,12 @@ public class Day9 : DayBase<int>
                 if (!tail.IsAdj(head))
                 {
                     tail.Follow(head);
-                    
                 }
             }
         }
 
+        //6270 to low
+        PrintTrail(visited);
         return visited.Count;
     }
 
