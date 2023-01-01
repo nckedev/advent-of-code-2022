@@ -99,7 +99,7 @@ public class Day9 : DayBase<int>
         var tail = new Knot(0, 0);
 
         var visited = new HashSet<Knot>();
-        foreach (var instruction in ReadFileAsLines(9, true).Select(s =>
+        foreach (var instruction in ReadFileAsLines(9, false).Select(s =>
                  {
                      var t = s.Split(' ');
                      return new Instruction(CharToDirection(t.First()[0]), int.Parse(t[1]));
@@ -108,21 +108,49 @@ public class Day9 : DayBase<int>
             for (var i = 0; i < instruction.Count; i++)
             {
                 head.Step(instruction.Direction);
-                visited.Add(tail);
                 if (!tail.IsAdj(head))
                 {
                     tail.Follow(head);
                 }
+                visited.Add(tail);
             }
         }
 
-        //6270 to low
-        PrintTrail(visited);
+        //      PrintTrail(visited);
         return visited.Count;
     }
 
     public override int Solve2()
     {
-        return 0;
+        var head = new Knot(0, 0);
+        var tail = Enumerable.Repeat(new Knot(0, 0), 9).ToArray();
+
+        var visited = new HashSet<Knot>();
+        foreach (var instruction in ReadFileAsLines(9, false).Select(s =>
+                 {
+                     var t = s.Split(' ');
+                     return new Instruction(CharToDirection(t.First()[0]), int.Parse(t[1]));
+                 }))
+        {
+            for (var i = 0; i < instruction.Count; i++)
+            {
+                head.Step(instruction.Direction);
+                if (!tail.First().IsAdj(head))
+                {
+                    tail.First().Follow(head);
+                    var prev = tail.First();
+                    foreach (var t in tail[1..8])
+                    {
+                        
+                        t.Follow(prev);
+                        prev = t;
+                    }
+                }
+
+                visited.Add(tail.Last());
+            }
+        }
+
+        return visited.Count;
     }
 }
