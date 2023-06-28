@@ -78,6 +78,7 @@ public class Cpu
     }
 }
 
+
 public sealed class Day10 : DayBase<int>
 {
     private readonly IEnumerable<string> _input;
